@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import './ContactForm.module.css';
-import { useDispatch, useSelector } from 'react-redux';
-import { getContacts, addContact } from '../../redux/slice';
+import {
+  useGetContactsQuery,
+  useAddContactMutation,
+} from '../../redux/contactSlice';
 
 export const ContactForm = () => {
   const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
-  const contacts = useSelector(getContacts);
-  const dispatch = useDispatch();
+  const [phone, setNumber] = useState('');
+  const { data: contacts } = useGetContactsQuery();
+  const [addContact] = useAddContactMutation();
 
   const handleChange = event => {
     const { name, value } = event.currentTarget;
@@ -15,16 +17,16 @@ export const ContactForm = () => {
     if (name === 'number') setNumber(value);
   };
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    const contact = { name, number };
+    const contact = { name, phone };
     const isExists = contacts.some(
       i => i.name.toLowerCase() === contact.name.toLowerCase()
     );
     if (isExists) {
-      alert(`${name} or ${number} is already in contacts`);
+      alert(`${name} or ${phone} is already in contacts`);
     } else {
-      dispatch(addContact(contact));
+      addContact(contact);
     }
     setName('');
     setNumber('');
@@ -46,7 +48,7 @@ export const ContactForm = () => {
       <input
         type="tel"
         name="number"
-        value={number}
+        value={phone}
         onChange={handleChange}
         placeholder="number"
         pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
