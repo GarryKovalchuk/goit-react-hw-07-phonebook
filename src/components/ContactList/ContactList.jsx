@@ -1,11 +1,15 @@
 import './ContactList.module.css';
-import { useDispatch, useSelector } from 'react-redux';
-import { getContacts, getFilter, deleteContact } from '../../redux/slice';
+import { useSelector } from 'react-redux';
+import { getFilter } from '../../redux/filterSlice';
+import {
+  useGetContactsQuery,
+  useDeleteContactMutation,
+} from '../../redux/contactSlice';
 
 export const ContactList = () => {
-  const dispatch = useDispatch();
-  const contacts = useSelector(getContacts);
   const filter = useSelector(getFilter);
+  const { data: contacts, isFetching } = useGetContactsQuery();
+  const [deleteContact, { isLoading }] = useDeleteContactMutation();
 
   const findContacts = () => {
     const normalizedFilter = filter.toLowerCase();
@@ -17,19 +21,29 @@ export const ContactList = () => {
   const filteredContacts = findContacts();
 
   return (
-    <ul>
-      {filteredContacts.map(({ id, name, number }) => {
-        return (
-          <li key={id}>
-            <p>
-              {name}: {number}
-            </p>
-            <button type="button" onClick={() => dispatch(deleteContact(id))}>
-              Delete
-            </button>
-          </li>
-        );
-      })}
-    </ul>
+    <>
+      {isFetching && <p>Loading...</p>}
+      {contacts && (
+        <ul>
+          {filteredContacts.map(({ id, name, phone }) => {
+            return (
+              <li key={id}>
+                <p>
+                  {name}: {phone}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    deleteContact(id);
+                  }}
+                >
+                  {isLoading ? '...' : 'Delete'}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </>
   );
 };
